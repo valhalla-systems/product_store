@@ -1,0 +1,23 @@
+{
+  "name": "mern-project",
+  "version": "1.0.0",
+  "description": "Complete CRUD product management system with RESTful API backend and responsive React frontend",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "start": "cross-env NODE_ENV=production node server.js"
+  },
+  "keywords": [],
+  "author": "Vagner Njord",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "dotenv": "^17.2.2",
+    "express": "^4.19.2",
+    "mongoose": "^8.18.0"
+  },
+  "devDependencies": {
+    "cross-env": "^10.0.0",
+    "nodemon": "^3.1.10"
+  }
+}

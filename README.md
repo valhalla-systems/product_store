@@ -53,7 +53,7 @@ Ele foi construído passo a passo como parte do livro _React e o Ecossistema Ful
 
 ## 🚀 Deploy
 
-🔗 [Acesse a aplicação online](https://product-store-vao3.onrender.com/)
+🔗 [Acesse a aplicação online](https://product-store-kt28.onrender.com/)
 
 _(Edite o link acima com a URL real do Render após o deploy.)_
 

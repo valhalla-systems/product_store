@@ -1,7 +1,14 @@
 import mongoose from "mongoose";
 import Product from "../models/product.model.js";
 
-// Buscar todos
+/*
+----------------------------------------------------------
+ Controlador de Produtos
+ Agora com suporte a upload via Cloudinary
+----------------------------------------------------------
+*/
+
+// 📦 Buscar todos os produtos
 export const getProducts = async (req, res) => {
   try {
     const products = await Product.find();
@@ -15,7 +22,7 @@ export const getProducts = async (req, res) => {
   }
 };
 
-// Buscar por ID
+// 🔍 Buscar produto por ID
 export const getProductById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -35,33 +42,40 @@ export const getProductById = async (req, res) => {
     res.status(200).json({ success: true, data: product });
   } catch (error) {
     console.error("Erro ao buscar produto:", error.message);
-    res
-      .status(500)
-      .json({ success: false, message: "Erro ao buscar produto." });
+    res.status(500).json({
+      success: false,
+      message: "Erro ao buscar produto.",
+    });
   }
 };
 
-// Criar produto
+// ➕ Criar produto (com suporte a upload Cloudinary)
 export const createProduct = async (req, res) => {
-  const product = req.body;
-  // Aqui, price undefined permite 0, e nega menor do que 0
-  if (!product.name || !product.price === undefined || !product.image) {
-    return res.status(400).json({
-      success: false,
-      message: "Todos os campos obrigatórios devem ser preenchidos.",
-    });
-  }
-
   try {
+    const product = req.body;
+
+    // Se o upload veio via multipart/form-data, o multer injeta req.file
+    if (req.file && req.file.path) {
+      product.image = req.file.path; // URL segura do Cloudinary
+    }
+
+    if (!product.name || product.price === undefined || !product.image) {
+      return res.status(400).json({
+        success: false,
+        message: "Todos os campos obrigatórios devem ser preenchidos.",
+      });
+    }
+
     const newProduct = new Product(product);
     await newProduct.save();
+
     res.status(201).json({
       success: true,
       message: `Produto "${newProduct.name}" criado com sucesso.`,
       data: newProduct,
     });
   } catch (error) {
-    console.error("Erro ao salvar o produto:", error.message);
+    console.error("Erro ao criar produto:", error.message);
     res.status(500).json({
       success: false,
       message: "Erro interno do servidor. Tente novamente mais tarde.",
@@ -69,19 +83,24 @@ export const createProduct = async (req, res) => {
   }
 };
 
-// Atualizar por completo (PUT)
+// 🔄 Atualizar produto (PUT)
 export const updateProduct = async (req, res) => {
   const { id } = req.params;
-  const product = req.body;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(400).json({ success: false, message: "ID inválido." });
   }
 
   try {
+    const product = req.body;
+
+    if (req.file && req.file.path) {
+      product.image = req.file.path;
+    }
+
     const updatedProduct = await Product.findByIdAndUpdate(id, product, {
       new: true,
-      runValidators: true, // garante validação ao atualizar
+      runValidators: true,
     });
 
     if (!updatedProduct) {
@@ -104,16 +123,21 @@ export const updateProduct = async (req, res) => {
   }
 };
 
-// Atualizar parcial (PATCH)
+// ✏️ Atualizar parcialmente (PATCH)
 export const patchProduct = async (req, res) => {
   const { id } = req.params;
-  const updates = req.body;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(400).json({ success: false, message: "ID inválido." });
   }
 
   try {
+    const updates = req.body;
+
+    if (req.file && req.file.path) {
+      updates.image = req.file.path;
+    }
+
     const updatedProduct = await Product.findByIdAndUpdate(
       id,
       { $set: updates },
@@ -132,7 +156,7 @@ export const patchProduct = async (req, res) => {
       data: updatedProduct,
     });
   } catch (error) {
-    console.error("Erro ao atualizar parcialmente o produto:", error.message);
+    console.error("Erro ao atualizar parcialmente:", error.message);
     res.status(500).json({
       success: false,
       message: "Erro interno do servidor. Tente novamente mais tarde.",
@@ -140,7 +164,7 @@ export const patchProduct = async (req, res) => {
   }
 };
 
-// Deletar
+// ❌ Deletar produto
 export const deleteProduct = async (req, res) => {
   const { id } = req.params;
 

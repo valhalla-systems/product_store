@@ -30,9 +30,15 @@ import {
 import { useProductStore } from "../store/product";
 import { useEffect, useRef, useState } from "react";
 
+/**
+ * Card de exibição de produto com opções de edição e exclusão.
+ * Agora com pré-visualização centralizada e spinner no botão de atualização.
+ */
 const ProductCard = ({ product }) => {
   const [updatedProduct, setUpdatedProduct] = useState(product);
   const [isChanged, setIsChanged] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // 🔄 Spinner de carregamento
+  const [preview, setPreview] = useState(null); // 🖼️ Preview temporário
 
   const textColor = useColorModeValue("gray.600", "gray.200");
   const bg = useColorModeValue("white", "gray.800");
@@ -40,12 +46,13 @@ const ProductCard = ({ product }) => {
   const { deleteProduct, updateProduct } = useProductStore();
   const toast = useToast();
 
-  const { isOpen, onOpen, onClose } = useDisclosure(); // modal edição
+  // Modais
+  const { isOpen, onOpen, onClose } = useDisclosure(); // edição
   const {
     isOpen: isConfirmOpen,
     onOpen: onConfirmOpen,
     onClose: onConfirmClose,
-  } = useDisclosure(); // confirmação exclusão
+  } = useDisclosure(); // exclusão
   const {
     isOpen: isImageOpen,
     onOpen: onOpenImage,
@@ -53,14 +60,16 @@ const ProductCard = ({ product }) => {
   } = useDisclosure(); // imagem ampliada
 
   const cancelRef = useRef();
+  const fileInputRef = useRef(null);
 
-  // Sempre que o produto mudar (store atualizada), sincroniza estado local
+  // Sincroniza o estado local com o produto atualizado da store
   useEffect(() => {
     setUpdatedProduct(product);
+    setPreview(product.image);
     setIsChanged(false);
   }, [product]);
 
-  // Verifica se houve alterações em relação ao produto original
+  // Detecta alterações em relação ao produto original
   useEffect(() => {
     const hasChanges =
       updatedProduct.name !== product.name ||
@@ -73,7 +82,7 @@ const ProductCard = ({ product }) => {
   const handleDeleteProduct = async (pid) => {
     const { success, message } = await deleteProduct(pid);
     toast({
-      title: success ? "Sucesso" : "Erro",
+      title: success ? "Sucesso ✅" : "Erro ❌",
       description: message,
       status: success ? "success" : "error",
       duration: 3000,
@@ -81,25 +90,26 @@ const ProductCard = ({ product }) => {
     });
   };
 
-  const toastId = "update-product-toast";
-
   const handleUpdateProduct = async (pid, updatedProduct) => {
+    setIsLoading(true);
+
     const { success, message } = await updateProduct(pid, updatedProduct);
+
+    toast({
+      title: success ? "Sucesso ✅" : "Erro ❌",
+      description: message,
+      status: success ? "success" : "error",
+      duration: 3000,
+      isClosable: true,
+    });
 
     if (success) {
       onClose();
+      setPreview(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
 
-    if (!toast.isActive(toastId)) {
-      toast({
-        id: toastId,
-        title: success ? "Sucesso" : "Erro",
-        description: message,
-        status: success ? "success" : "error",
-        duration: 3000,
-        isClosable: true,
-      });
-    }
+    setIsLoading(false);
   };
 
   const handleConfirmDelete = async () => {
@@ -107,7 +117,20 @@ const ProductCard = ({ product }) => {
     onConfirmClose();
   };
 
-  // Força perda de foco para evitar tooltip "presa"
+  // Atualiza o preview quando o usuário seleciona nova imagem
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+
+    if (file) {
+      setPreview(URL.createObjectURL(file));
+      setUpdatedProduct({ ...updatedProduct, image: file });
+    } else {
+      setPreview(product.image);
+      setUpdatedProduct({ ...updatedProduct, image: product.image });
+    }
+  };
+
+  // Evita tooltip presa ao abrir modal
   const handleOpenEdit = (e) => {
     e.currentTarget.blur();
     onOpen();
@@ -127,6 +150,7 @@ const ProductCard = ({ product }) => {
       _hover={{ transform: "translateY(-5px)", shadow: "xl" }}
       bg={bg}
     >
+      {/* Imagem do produto */}
       <Image
         src={product.image}
         alt={product.name}
@@ -137,6 +161,7 @@ const ProductCard = ({ product }) => {
         onClick={onOpenImage}
       />
 
+      {/* Corpo do card */}
       <Box p={4}>
         <Heading as="h3" size="md" mb={2}>
           {product.name}
@@ -167,11 +192,12 @@ const ProductCard = ({ product }) => {
         </HStack>
       </Box>
 
-      {/* Modal para edição */}
+      {/* 🧱 Modal de edição */}
       <Modal
         isOpen={isOpen}
         onClose={() => {
           setUpdatedProduct(product);
+          setPreview(product.image);
           setIsChanged(false);
           onClose();
         }}
@@ -189,6 +215,7 @@ const ProductCard = ({ product }) => {
                   setUpdatedProduct({ ...updatedProduct, name: e.target.value })
                 }
               />
+
               <Input
                 placeholder="Preço"
                 type="number"
@@ -200,24 +227,36 @@ const ProductCard = ({ product }) => {
                   })
                 }
               />
+
+              {/* Upload e pré-visualização da imagem */}
               <Input
-                placeholder="URL da Imagem"
-                value={updatedProduct.image}
-                onChange={(e) =>
-                  setUpdatedProduct({
-                    ...updatedProduct,
-                    image: e.target.value,
-                  })
-                }
+                type="file"
+                ref={fileInputRef}
+                accept="image/*"
+                onChange={handleImageChange}
               />
+
+              {preview && (
+                <Image
+                  src={preview}
+                  alt="Pré-visualização"
+                  maxH="200px"
+                  borderRadius="md"
+                  objectFit="cover"
+                  shadow="sm"
+                />
+              )}
             </VStack>
           </ModalBody>
+
           <ModalFooter>
             <Button
               colorScheme="blue"
               mr={3}
               onClick={() => handleUpdateProduct(product._id, updatedProduct)}
-              isDisabled={!isChanged}
+              isDisabled={!isChanged || isLoading}
+              isLoading={isLoading}
+              loadingText="Atualizando..."
             >
               Atualizar
             </Button>
@@ -225,6 +264,7 @@ const ProductCard = ({ product }) => {
               variant="ghost"
               onClick={() => {
                 setUpdatedProduct(product);
+                setPreview(product.image);
                 setIsChanged(false);
                 onClose();
               }}
@@ -235,7 +275,7 @@ const ProductCard = ({ product }) => {
         </ModalContent>
       </Modal>
 
-      {/* Dialogo de confirmação para deletar */}
+      {/* 🗑️ Diálogo de confirmação */}
       <AlertDialog
         isOpen={isConfirmOpen}
         leastDestructiveRef={cancelRef}
@@ -246,13 +286,11 @@ const ProductCard = ({ product }) => {
             <AlertDialogHeader fontSize="lg" fontWeight="bold">
               Confirmar exclusão
             </AlertDialogHeader>
-
             <AlertDialogBody>
               Tem certeza que deseja excluir o produto{" "}
               <strong>{product.name}</strong>? Essa ação não poderá ser
               desfeita.
             </AlertDialogBody>
-
             <AlertDialogFooter>
               <Button ref={cancelRef} onClick={onConfirmClose}>
                 Cancelar
@@ -265,7 +303,7 @@ const ProductCard = ({ product }) => {
         </AlertDialogOverlay>
       </AlertDialog>
 
-      {/* Modal da imagem ampliada */}
+      {/* 🔍 Modal da imagem ampliada */}
       <Modal isOpen={isImageOpen} onClose={onCloseImage} isCentered>
         <ModalOverlay />
         <ModalContent maxW="90vw" maxH="90vh" bg="transparent" boxShadow="none">

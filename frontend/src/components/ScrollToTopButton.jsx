@@ -8,7 +8,10 @@ const bounce = keyframes`
   50% { transform: translateY(-6px); }
 `;
 
-const ScrollToTopButton = () => {
+const ScrollToTopButton = ({
+  bottom = "30px", // 🆕 Nova prop: controla a distância do botão até o rodapé
+  right = "30px", // 🆕 Nova prop: controla a distância lateral
+}) => {
   const [isVisible, setIsVisible] = useState(false);
   const { colorMode } = useColorMode();
 
@@ -31,8 +34,8 @@ const ScrollToTopButton = () => {
         aria-label="Voltar ao topo"
         icon={<FaArrowUp />}
         position="fixed"
-        bottom="30px"
-        right="30px"
+        bottom={bottom} // 🆕 Agora o valor é dinâmico via props
+        right={right} // 🆕 Também ajustável via props
         borderRadius="full"
         size="lg"
         colorScheme="brand"

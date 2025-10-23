@@ -1,3 +1,8 @@
+// ✅ ARQUIVO: frontend/src/App.jsx
+// ----------------------------------------------------------
+// Componente raiz da aplicação
+// ----------------------------------------------------------
+
 import { Box, useColorModeValue } from "@chakra-ui/react";
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";

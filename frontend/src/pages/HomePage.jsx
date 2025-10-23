@@ -1,3 +1,8 @@
+// ✅ ARQUIVO: frontend/src/pages/HomePage.jsx
+// ----------------------------------------------------------
+// Página inicial que lista produtos com loader e mensagem de vazio
+// ----------------------------------------------------------
+
 import { Container, SimpleGrid, Text, VStack } from "@chakra-ui/react";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";

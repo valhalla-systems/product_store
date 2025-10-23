@@ -1,3 +1,5 @@
+// ✅ ARQUIVO: frontend/src/store/product.js
+
 import { create } from "zustand";
 
 /*
@@ -100,13 +102,21 @@ export const useProductStore = create((set) => ({
   updateProduct: async (pid, updatedProduct) => {
     try {
       const formData = new FormData();
+
       if (updatedProduct.name) formData.append("name", updatedProduct.name);
       if (updatedProduct.price)
         formData.append("price", Number(updatedProduct.price));
       if (updatedProduct.description)
         formData.append("description", updatedProduct.description);
-      if (updatedProduct.image instanceof File)
-        formData.append("image", updatedProduct.image); // novo upload
+
+      // ✅ Corrigido: aceita File, Blob ou qualquer tipo de arquivo válido
+      if (
+        updatedProduct.image &&
+        (updatedProduct.image instanceof File ||
+          updatedProduct.image instanceof Blob)
+      ) {
+        formData.append("image", updatedProduct.image);
+      }
 
       const res = await fetch(`/api/products/${pid}`, {
         method: "PUT",

@@ -1,3 +1,5 @@
+// ✅ ARQUIVO: backend/controllers/product.controller.jsjs
+
 import mongoose from "mongoose";
 import Product from "../models/product.model.js";
 
@@ -84,6 +86,7 @@ export const createProduct = async (req, res) => {
 };
 
 // 🔄 Atualizar produto (PUT)
+// 🔄 Atualizar produto (PUT)
 export const updateProduct = async (req, res) => {
   const { id } = req.params;
 
@@ -92,13 +95,20 @@ export const updateProduct = async (req, res) => {
   }
 
   try {
-    const product = req.body;
+    // 🧩 Garantir que o req.body seja um objeto mesmo em multipart/form-data
+    const productData = { ...req.body };
 
+    // Cloudinary injeta o caminho da imagem em req.file.path
     if (req.file && req.file.path) {
-      product.image = req.file.path;
+      productData.image = req.file.path;
     }
 
-    const updatedProduct = await Product.findByIdAndUpdate(id, product, {
+    // Converte o preço para número se vier como string
+    if (productData.price !== undefined) {
+      productData.price = Number(productData.price);
+    }
+
+    const updatedProduct = await Product.findByIdAndUpdate(id, productData, {
       new: true,
       runValidators: true,
     });
@@ -115,7 +125,7 @@ export const updateProduct = async (req, res) => {
       data: updatedProduct,
     });
   } catch (error) {
-    console.error("Erro ao atualizar o produto:", error.message);
+    console.error("Erro ao atualizar produto:", error.message);
     res.status(500).json({
       success: false,
       message: "Erro interno do servidor. Tente novamente mais tarde.",
@@ -132,10 +142,14 @@ export const patchProduct = async (req, res) => {
   }
 
   try {
-    const updates = req.body;
+    const updates = { ...req.body };
 
     if (req.file && req.file.path) {
       updates.image = req.file.path;
+    }
+
+    if (updates.price !== undefined) {
+      updates.price = Number(updates.price);
     }
 
     const updatedProduct = await Product.findByIdAndUpdate(

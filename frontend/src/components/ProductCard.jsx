@@ -1,3 +1,9 @@
+// ✅ ARQUIVO: frontend/src/components/ProductCard.jsx
+// ----------------------------------------------------------
+// Card de exibição e edição de produto com suporte completo
+// a upload, compressão, preview e spinner de processamento.
+// ----------------------------------------------------------
+
 import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
 import {
   Box,
@@ -26,19 +32,20 @@ import {
   AlertDialogContent,
   AlertDialogOverlay,
   Tooltip,
+  Spinner,
 } from "@chakra-ui/react";
-import { useProductStore } from "../store/product";
 import { useEffect, useRef, useState } from "react";
+import { useProductStore } from "../store/product";
+import { useImageUploader } from "../hooks/useImageUploader";
 
 /**
- * Card de exibição de produto com opções de edição e exclusão.
- * Agora com pré-visualização centralizada e spinner no botão de atualização.
+ * Card de produto com suporte a edição e exclusão.
+ * Inclui preview, compressão e spinner de carregamento da imagem.
  */
 const ProductCard = ({ product }) => {
   const [updatedProduct, setUpdatedProduct] = useState(product);
   const [isChanged, setIsChanged] = useState(false);
-  const [isLoading, setIsLoading] = useState(false); // 🔄 Spinner de carregamento
-  const [preview, setPreview] = useState(null); // 🖼️ Preview temporário
+  const [isLoading, setIsLoading] = useState(false);
 
   const textColor = useColorModeValue("gray.600", "gray.200");
   const bg = useColorModeValue("white", "gray.800");
@@ -62,23 +69,33 @@ const ProductCard = ({ product }) => {
   const cancelRef = useRef();
   const fileInputRef = useRef(null);
 
-  // Sincroniza o estado local com o produto atualizado da store
+  // Hook de upload e compressão
+  const {
+    preview,
+    setPreview,
+    file,
+    setFile,
+    isImageLoading,
+    isCompressing,
+    handleImageChange,
+  } = useImageUploader();
+
+  // Sincroniza produto inicial
   useEffect(() => {
     setUpdatedProduct(product);
-    setPreview(product.image);
-    setIsChanged(false);
   }, [product]);
 
-  // Detecta alterações em relação ao produto original
+  // Detecta se houve alteração
   useEffect(() => {
     const hasChanges =
       updatedProduct.name !== product.name ||
       updatedProduct.price !== product.price ||
-      updatedProduct.image !== product.image;
+      (file && file !== product.image);
 
     setIsChanged(hasChanges);
-  }, [updatedProduct, product]);
+  }, [updatedProduct, product, file]);
 
+  // Excluir produto
   const handleDeleteProduct = async (pid) => {
     const { success, message } = await deleteProduct(pid);
     toast({
@@ -90,10 +107,31 @@ const ProductCard = ({ product }) => {
     });
   };
 
-  const handleUpdateProduct = async (pid, updatedProduct) => {
+  // Atualizar produto (com imagem e compressão)
+  const handleUpdateProduct = async () => {
+    if (!updatedProduct.name || !updatedProduct.price) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Preencha nome e preço antes de atualizar.",
+        status: "warning",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
     setIsLoading(true);
 
-    const { success, message } = await updateProduct(pid, updatedProduct);
+    const productToSend = {
+      ...updatedProduct,
+      price: parseFloat(updatedProduct.price),
+      ...(file && { image: file }), // só envia se houver nova imagem
+    };
+
+    const { success, message } = await updateProduct(
+      product._id,
+      productToSend
+    );
 
     toast({
       title: success ? "Sucesso ✅" : "Erro ❌",
@@ -105,8 +143,9 @@ const ProductCard = ({ product }) => {
 
     if (success) {
       onClose();
-      setPreview(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
+      setPreview(null);
+      setFile(null);
     }
 
     setIsLoading(false);
@@ -117,20 +156,6 @@ const ProductCard = ({ product }) => {
     onConfirmClose();
   };
 
-  // Atualiza o preview quando o usuário seleciona nova imagem
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-
-    if (file) {
-      setPreview(URL.createObjectURL(file));
-      setUpdatedProduct({ ...updatedProduct, image: file });
-    } else {
-      setPreview(product.image);
-      setUpdatedProduct({ ...updatedProduct, image: product.image });
-    }
-  };
-
-  // Evita tooltip presa ao abrir modal
   const handleOpenEdit = (e) => {
     e.currentTarget.blur();
     onOpen();
@@ -150,7 +175,7 @@ const ProductCard = ({ product }) => {
       _hover={{ transform: "translateY(-5px)", shadow: "xl" }}
       bg={bg}
     >
-      {/* Imagem do produto */}
+      {/* Imagem principal */}
       <Image
         src={product.image}
         alt={product.name}
@@ -161,7 +186,7 @@ const ProductCard = ({ product }) => {
         onClick={onOpenImage}
       />
 
-      {/* Corpo do card */}
+      {/* Corpo */}
       <Box p={4}>
         <Heading as="h3" size="md" mb={2}>
           {product.name}
@@ -197,8 +222,6 @@ const ProductCard = ({ product }) => {
         isOpen={isOpen}
         onClose={() => {
           setUpdatedProduct(product);
-          setPreview(product.image);
-          setIsChanged(false);
           onClose();
         }}
       >
@@ -207,7 +230,7 @@ const ProductCard = ({ product }) => {
           <ModalHeader>Atualizar Produto</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <VStack spacing={4}>
+            <VStack spacing={4} align="stretch">
               <Input
                 placeholder="Nome"
                 value={updatedProduct.name}
@@ -228,7 +251,7 @@ const ProductCard = ({ product }) => {
                 }
               />
 
-              {/* Upload e pré-visualização da imagem */}
+              {/* Upload da imagem */}
               <Input
                 type="file"
                 ref={fileInputRef}
@@ -236,15 +259,48 @@ const ProductCard = ({ product }) => {
                 onChange={handleImageChange}
               />
 
-              {preview && (
-                <Image
-                  src={preview}
-                  alt="Pré-visualização"
-                  maxH="200px"
+              {/* Preview com overlay de carregamento */}
+              {(preview || product.image) && (
+                <Box
+                  position="relative"
+                  w="full"
+                  h="200px"
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
                   borderRadius="md"
-                  objectFit="cover"
-                  shadow="sm"
-                />
+                  overflow="hidden"
+                >
+                  {(isImageLoading || isCompressing) && (
+                    <Box
+                      position="absolute"
+                      inset="0"
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      bg="rgba(0,0,0,0.3)"
+                      zIndex="1"
+                    >
+                      <VStack spacing={2}>
+                        <Spinner size="xl" color="white" />
+                        <Text color="white">
+                          {isCompressing
+                            ? "Comprimindo imagem..."
+                            : "Carregando..."}
+                        </Text>
+                      </VStack>
+                    </Box>
+                  )}
+
+                  <Image
+                    src={preview || product.image}
+                    alt="Pré-visualização"
+                    maxH="200px"
+                    objectFit="contain"
+                    borderRadius="md"
+                    shadow="sm"
+                  />
+                </Box>
               )}
             </VStack>
           </ModalBody>
@@ -253,22 +309,14 @@ const ProductCard = ({ product }) => {
             <Button
               colorScheme="blue"
               mr={3}
-              onClick={() => handleUpdateProduct(product._id, updatedProduct)}
-              isDisabled={!isChanged || isLoading}
-              isLoading={isLoading}
-              loadingText="Atualizando..."
+              onClick={handleUpdateProduct}
+              isDisabled={!isChanged || isLoading || isCompressing}
+              isLoading={isLoading || isCompressing}
+              loadingText={isCompressing ? "Comprimindo..." : "Atualizando..."}
             >
               Atualizar
             </Button>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                setUpdatedProduct(product);
-                setPreview(product.image);
-                setIsChanged(false);
-                onClose();
-              }}
-            >
+            <Button variant="ghost" onClick={onClose}>
               Cancelar
             </Button>
           </ModalFooter>
@@ -303,7 +351,7 @@ const ProductCard = ({ product }) => {
         </AlertDialogOverlay>
       </AlertDialog>
 
-      {/* 🔍 Modal da imagem ampliada */}
+      {/* 🔍 Modal de imagem ampliada */}
       <Modal isOpen={isImageOpen} onClose={onCloseImage} isCentered>
         <ModalOverlay />
         <ModalContent maxW="90vw" maxH="90vh" bg="transparent" boxShadow="none">

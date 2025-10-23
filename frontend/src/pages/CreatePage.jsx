@@ -1,3 +1,8 @@
+// ✅ ARQUIVO: frontend/src/pages/CreatePage.jsx
+// ----------------------------------------------------------
+// Página de criação de produtos com hook useImageUploader
+// ----------------------------------------------------------
+
 import {
   Box,
   Button,
@@ -8,33 +13,59 @@ import {
   useColorModeValue,
   useToast,
   VStack,
+  Spinner,
+  Text,
+  FormControl,
+  FormLabel,
 } from "@chakra-ui/react";
 import { useRef, useState } from "react";
 import { useProductStore } from "../store/product";
+import { useImageUploader } from "../hooks/useImageUploader";
 
-/**
- * Página de criação de novos produtos.
- * Agora com pré-visualização da imagem e limpeza completa após o envio.
- */
 const CreatePage = () => {
   const [newProduct, setNewProduct] = useState({
     name: "",
     price: "",
-    image: "",
   });
-
-  const [preview, setPreview] = useState(null); // 🖼️ Estado para exibir a imagem
   const [isLoading, setIsLoading] = useState(false);
 
   const toast = useToast();
   const { createProduct } = useProductStore();
-
   const fileInputRef = useRef(null);
 
+  // 🪝 Hook customizado para upload e compressão
+  const {
+    preview,
+    setPreview,
+    file,
+    setFile,
+    isImageLoading,
+    isCompressing,
+    handleImageChange,
+  } = useImageUploader();
+
   const handleAddProduct = async () => {
+    if (!newProduct.name.trim() || !newProduct.price || !file) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Preencha nome, preço e selecione uma imagem.",
+        status: "warning",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
     setIsLoading(true);
 
-    const { success, message } = await createProduct(newProduct);
+    // 🔧 Conversão segura de preço para número
+    const productToSend = {
+      ...newProduct,
+      price: parseFloat(newProduct.price),
+      image: file,
+    };
+
+    const { success, message } = await createProduct(productToSend);
 
     toast({
       title: success ? "Sucesso ✅" : "Erro ❌",
@@ -47,35 +78,21 @@ const CreatePage = () => {
     });
 
     if (success) {
-      // 🧹 Limpa os campos e o preview após o envio
-      setNewProduct({ name: "", price: "", image: "" });
-      setPreview(null);
+      setNewProduct({ name: "", price: "" });
 
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+      // Reset do input e do hook
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      setPreview(null);
+      setFile(null);
     }
 
     setIsLoading(false);
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-
-    if (file) {
-      // Cria um preview temporário com URL local
-      setPreview(URL.createObjectURL(file));
-      setNewProduct({ ...newProduct, image: file });
-    } else {
-      setPreview(null);
-      setNewProduct({ ...newProduct, image: "" });
-    }
-  };
-
   return (
-    <Container maxW="container.sm">
+    <Container maxW="container.sm" py={10}>
       <VStack spacing={8}>
-        <Heading as="h1" size="2xl" textAlign="center" mb={8}>
+        <Heading as="h1" size="2xl" textAlign="center">
           Criar Novo Produto
         </Heading>
 
@@ -86,44 +103,89 @@ const CreatePage = () => {
           rounded="lg"
           shadow="md"
         >
-          <VStack spacing={4}>
-            {/* Campo: Nome do produto */}
-            <Input
-              placeholder="Nome do Produto"
-              value={newProduct.name}
-              onChange={(e) =>
-                setNewProduct({ ...newProduct, name: e.target.value })
-              }
-            />
-
-            {/* Campo: Preço */}
-            <Input
-              placeholder="Preço"
-              type="number"
-              value={newProduct.price}
-              onChange={(e) =>
-                setNewProduct({ ...newProduct, price: e.target.value })
-              }
-            />
-
-            {/* Campo: Upload da Imagem */}
-            <Input
-              type="file"
-              ref={fileInputRef}
-              accept="image/*"
-              onChange={handleImageChange}
-            />
-
-            {/* 🖼️ Pré-visualização da Imagem */}
-            {preview && (
-              <Image
-                src={preview}
-                alt="Pré-visualização"
-                maxH="200px"
-                borderRadius="md"
-                objectFit="cover"
-                shadow="sm"
+          <VStack spacing={5} align="stretch">
+            {/* Nome */}
+            <FormControl isRequired>
+              {/*<FormLabel htmlFor="name">Nome do Produto</FormLabel>*/}
+              <Input
+                id="name"
+                name="name"
+                placeholder="Nome do Produto"
+                value={newProduct.name}
+                onChange={(e) =>
+                  setNewProduct({ ...newProduct, name: e.target.value })
+                }
               />
+            </FormControl>
+
+            {/* Preço */}
+            <FormControl isRequired>
+              {/*<FormLabel htmlFor="price">Preço</FormLabel>*/}
+              <Input
+                id="price"
+                name="price"
+                placeholder="Preço"
+                type="number"
+                min="0"
+                value={newProduct.price}
+                onChange={(e) =>
+                  setNewProduct({ ...newProduct, price: e.target.value })
+                }
+              />
+            </FormControl>
+
+            {/* Upload */}
+            <FormControl isRequired>
+              {/*<FormLabel htmlFor="image">Imagem do Produto</FormLabel>*/}
+              <Input
+                id="image"
+                name="image"
+                type="file"
+                ref={fileInputRef}
+                accept="image/*"
+                onChange={handleImageChange}
+              />
+            </FormControl>
+
+            {/* Preview */}
+            {preview && (
+              <Box
+                position="relative"
+                w="full"
+                h="200px"
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+                borderRadius="md"
+                overflow="hidden"
+              >
+                {isImageLoading && (
+                  <Box
+                    position="absolute"
+                    inset="0"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    bg="rgba(0,0,0,0.3)"
+                    zIndex="1"
+                  >
+                    <VStack spacing={2}>
+                      <Spinner size="xl" color="white" />
+                      <Text color="white">Carregando imagem...</Text>
+                    </VStack>
+                  </Box>
+                )}
+
+                <Image
+                  src={preview}
+                  alt="Pré-visualização"
+                  maxH="200px"
+                  objectFit="contain"
+                  borderRadius="md"
+                  shadow="sm"
+                  onLoad={() => {}}
+                />
+              </Box>
             )}
 
             {/* Botão de envio */}
@@ -131,13 +193,10 @@ const CreatePage = () => {
               colorScheme="blue"
               onClick={handleAddProduct}
               w="full"
-              isLoading={isLoading}
-              loadingText="Adicionando..."
+              isLoading={isLoading || isCompressing}
+              loadingText={isCompressing ? "Comprimindo..." : "Adicionando..."}
               isDisabled={
-                !newProduct.name ||
-                !newProduct.price ||
-                !newProduct.image ||
-                isLoading
+                !newProduct.name || !newProduct.price || !file || isCompressing
               }
             >
               Adicionar Produto

@@ -1,3 +1,8 @@
+// ✅ ARQUIVO: frontend/src/main.jsx
+// ----------------------------------------------------------
+// Ponto de entrada da aplicação
+// ----------------------------------------------------------
+
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { ChakraProvider, ColorModeScript } from "@chakra-ui/react";

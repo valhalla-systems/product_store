@@ -1,4 +1,4 @@
-// ✅ NOVO ARQUIVO: backend/middleware/upload.middleware.js
+// ✅ ARQUIVO: backend/middlewares/upload.middleware.js
 // ----------------------------------------------------------
 // Este middleware gerencia o upload de imagens utilizando o Cloudinary,
 // integrado via multer-storage-cloudinary.
@@ -25,7 +25,7 @@ const storage = new CloudinaryStorage({
 // 🧱 Criação do middleware multer
 const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // limite de 5 MB por imagem
+  limits: { fileSize: 50 * 1024 * 1024 }, // limite de 50 MB por imagem
   fileFilter: (req, file, cb) => {
     if (!file.mimetype.startsWith("image/")) {
       cb(new Error("Apenas arquivos de imagem são permitidos!"), false);

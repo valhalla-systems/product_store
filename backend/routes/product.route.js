@@ -1,3 +1,5 @@
+// ✅ ARQUIVO: backend/routes/product.route.js
+
 import express from "express";
 import {
   createProduct,

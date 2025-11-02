@@ -111,9 +111,9 @@ servindo também como **portfólio profissional**.
 
 ## 🚀 Deploy
 
-🔗 [Acesse a aplicação online](https://product-store-r21x.onrender.com)
+🔗 [Acesse a aplicação online](https://product-store-2f2y.onrender.com/)
 
-`https://product-store-r21x.onrender.com`
+`https://product-store-2f2y.onrender.com/`
 
 (Substitua o link acima pela URL real após o deploy no Render.)
 

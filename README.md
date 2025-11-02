@@ -111,9 +111,9 @@ and also serves as a **professional portfolio application**.
 
 ## 🚀 Deployment
 
-🔗 [Access the live app](https://product-store-r21x.onrender.com)
+🔗 [Access the live app](https://product-store-2f2y.onrender.com/)
 
-`https://product-store-r21x.onrender.com`
+`https://product-store-2f2y.onrender.com/`
 
 (Replace the link above with your real Render deployment URL.)
 

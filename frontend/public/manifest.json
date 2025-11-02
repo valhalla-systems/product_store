@@ -1,0 +1,21 @@
+{
+  "name": "Loja de Produtos",
+  "short_name": "Loja",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#319795",
+  "description": "Aplicação de catálogo e cadastro de produtos.",
+  "icons": [
+    {
+      "src": "favicon-64x64.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    },
+    {
+      "src": "favicon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    }
+  ]
+}

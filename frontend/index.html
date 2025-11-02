@@ -1,0 +1,131 @@
+<!-- ✅ ARQUIVO: frontend/index.html -->
+    <!-- ===========================
+         ESTRUTURA BÁSICA DO HTML
+    ============================ -->
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <!-- ===========================
+         METADADOS BÁSICOS
+    ============================ -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <meta name="robots" content="index, follow" />
+    <meta
+      name="description"
+      content="Valhalla Systems: desenvolvimento de sistemas, guiando a evolução tecnológica para amplificar a capacidade humana com inovação e dedicação."
+    />
+
+    <!-- ===========================
+         SEO E REDES SOCIAIS (OPEN GRAPH)
+    ============================ -->
+    <meta
+      property="og:title"
+      content="Valhalla Systems: desenvolvimento de sistemas"
+    />
+    <meta
+      property="og:description"
+      content="Valhalla Systems: desenvolvimento de sistemas, guiando a evolução tecnológica para amplificar a capacidade humana com inovação e dedicação."
+    />
+    <meta property="og:url" content="https://valhallasystems.site/" />
+    <meta property="og:image" content="/apple-icon-180x180.png" />
+    <meta property="og:type" content="website" />
+
+    <!-- ===========================
+         ÍCONES E FAVICONS
+    ============================ -->
+    <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png" />
+    <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png" />
+    <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png" />
+    <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png" />
+    <link
+      rel="apple-touch-icon"
+      sizes="114x114"
+      href="/apple-icon-114x114.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="120x120"
+      href="/apple-icon-120x120.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="144x144"
+      href="/apple-icon-144x144.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="152x152"
+      href="/apple-icon-152x152.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/apple-icon-180x180.png"
+    />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
+    <link rel="icon" type="image/png" sizes="64x64" href="/favicon-64x64.png" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="128x128"
+      href="/favicon-128x128.png"
+    />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="msapplication-TileColor" content="#ffffff" />
+    <meta name="msapplication-TileImage" content="/mstile-150x150.png" />
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#000000" />
+
+    <!-- ===========================
+         SEO ESTRUTURADO (JSON-LD)
+         Dados estruturados para aprimorar
+         indexação e exibir rich snippets
+    ============================ -->
+    <script type="application/ld+json">
+      {
+        "@context": "http://schema.org",
+        "@type": "Organization",
+        "name": "Valhalla Systems",
+        "url": "https://valhallasystems.site/",
+        "logo": "https://valhallasystems.site/apple-icon-180x180.png",
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "telephone": "+55-11-97886-2206",
+          "contactType": "Atendimento ao cliente"
+        },
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Rua Tamandaré, 1974 - Sala 1",
+          "addressLocality": "São Paulo",
+          "addressRegion": "SP",
+          "postalCode": "01525-001",
+          "addressCountry": "BR"
+        },
+        "sameAs": [
+          "https://web.facebook.com/njord.technologies/",
+          "https://www.instagram.com/njord_technologies/",
+          "https://twitter.com/njordtech"
+        ],
+        "member": {
+          "@type": "Person",
+          "name": "Vagner Njord",
+          "jobTitle": "Presidente",
+          "sameAs": "https://www.linkedin.com/in/vagner-bsilva/"
+        }
+      }
+    </script>
+
+    <!-- ===========================
+         TÍTULO
+    ============================ -->
+    <title>Valhalla Systems | Product Store</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

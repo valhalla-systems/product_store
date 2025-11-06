@@ -6,7 +6,7 @@
 import mongoose from "mongoose";
 import Product from "../models/product.model.js";
 
-// 📦 Buscar todos os produtos
+// Buscar todos os produtos
 export const getProducts = async (req, res) => {
   try {
     const products = await Product.find(); // Retorna todos os documentos da coleção

@@ -11,7 +11,6 @@ import ScrollToTopButton from "./components/ScrollToTopButton";
 import { Suspense, lazy } from "react";
 import Loader from "./components/Loader";
 import { ModalProvider } from "./context/ModalContext";
-import Xpto from "./components/Xpto"; // ❌ não existe
 
 // Code splitting: carrega páginas sob demanda (melhora performance inicial)
 const HomePage = lazy(() => import("./pages/HomePage"));

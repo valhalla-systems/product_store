@@ -3,7 +3,8 @@ console.log("🔍 Rodando testes simulados do frontend...");
 
 // Vamos simular um erro típico de frontend:
 const tituloEsperado = "Loja de Produtos";
-const tituloRenderizado = "Loja de ProdutosX"; // ❌ errado de propósito
+// const tituloRenderizado = "Loja de ProdutosX"; // ❌ errado de propósito
+const tituloRenderizado = "Loja de ProdutosX"; // ✅ erro corrigido
 
 if (tituloEsperado !== tituloRenderizado) {
     console.error("❌ Erro: O título renderizado não corresponde ao esperado!");

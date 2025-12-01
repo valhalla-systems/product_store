@@ -4,7 +4,6 @@
   "description": "Complete CRUD product management system with RESTful API backend and responsive React frontend",
   "main": "server.js",
   "scripts": {
-    "test": "node test-error.js",
     "dev": "nodemon server.js",
     "start": "cross-env NODE_ENV=production node server.js",
     "build": "cd ../frontend && npm install && npm run build"

@@ -1,28 +1,28 @@
-name: CI — Teste com Erro
+name: CI Teste do frontend
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ main ]
+    branches: [ "main" ]
 
 jobs:
-  backend-tests:
+  build:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout do código
         uses: actions/checkout@v4
 
-      - name: Configurar Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Instalar dependências do backend
-        working-directory: ./backend
+      - name: Instalar dependências do frontend
+        working-directory: ./frontend
         run: npm install
 
-      - name: Rodar testes do backend
-        working-directory: ./backend
+      - name: Executar testes simulados do frontend
+        working-directory: ./frontend
         run: npm test
